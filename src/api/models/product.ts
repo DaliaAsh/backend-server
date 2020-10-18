@@ -14,7 +14,14 @@ const productSchema = mongoose.Schema({
         },
         min: [0, "Price has to be greater than 0"],
     },
-    code: { type: String, required: true, unique: true },
+    code: { type: String, required: true, unique: true,
+        validate: {
+            validator: function(v) {
+              return /[A-Z][A-Z][A-Z][-][a-z][a-z][a-z][-][0-9][0-9][0-9][0-9]/.test(v);
+            },
+            message: props => `${props.value} is not a valid code!`
+          }
+    },
     color: { type: String, required: false },
     categoryId: { type: Number, required: true, ref: 'Category' },
     description: { type: String, required: false },
