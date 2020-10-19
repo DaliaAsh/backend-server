@@ -23,6 +23,7 @@ catch (err) {
 }
 mongoose_1.default.Promise = global.Promise;
 //middleware 
+app.use('/assets', express_1.default.static('assets'));
 app.use(morgan_1.default('dev'));
 app.use(body_parser_1.default.urlencoded({ extended: false }));
 app.use(body_parser_1.default.json());

@@ -5,6 +5,7 @@ import checkoutsRoutes from "./api/routes/checkouts";
 import morgan from "morgan"; 
 import bodyParser from "body-parser"; 
 import mongoose from "mongoose"; 
+import multer from "multer"; 
 const app = express(); 
 try{
     mongoose.connect(`mongodb+srv://root:root@models.flbur.mongodb.net/Models?retryWrites=true&w=majority`,{
@@ -19,6 +20,7 @@ try{
 mongoose.Promise = global.Promise ; 
 
 //middleware 
+app.use('/assets',express.static('assets'))
 app.use(morgan('dev')); 
 app.use(bodyParser.urlencoded({extended:false})); 
 app.use(bodyParser.json()); 

@@ -5,10 +5,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var category_1 = __importDefault(require("../models/category"));
+var multer_1 = __importDefault(require("multer"));
 var router = express_1.default.Router();
+var storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './assets');
+    }, filename: function (req, file, cb) {
+        cb(null, Date.now() + file.originalname);
+    }
+});
+var fileFilter = function (req, file, cb) {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    }
+    else {
+        cb(null, false);
+    }
+};
+var upload = multer_1.default({
+    storage: storage,
+    fileFilter: fileFilter
+});
 router.get('/', function (req, res, next) {
     category_1.default.find().
-        select('id name').
+        select('id name categoryImage').
         then(function (categories) {
         console.log(categories);
         res.status(200).json({
@@ -26,18 +46,19 @@ router.get('/', function (req, res, next) {
         });
     });
 });
-router.post('/', function (req, res, next) {
-    console.log(req.body);
+router.post('/', upload.single('categoryImage'), function (req, res, next) {
     var category = new category_1.default({
         id: req.body.id,
-        name: req.body.name
+        name: req.body.name,
+        categoryImage: req.file.path
     });
     category.save().
         then(function (category) {
         res.status(201).json({
             category: {
                 name: category.name,
-                id: category.id
+                id: category.id,
+                categoryImage: category.categoryImage
             },
             request: {
                 method: 'POST',
@@ -54,7 +75,7 @@ router.post('/', function (req, res, next) {
 router.get('/:id', function (req, res, next) {
     var categoryId = req.params.id;
     category_1.default.find({ id: categoryId }).
-        select('id name').
+        select('id name categoryImage').
         then(function (category) {
         if (category) {
             res.status(200).json({
@@ -113,7 +134,7 @@ router.put('/:id', function (req, res, next) {
         res.status(200).json({
             Updated_Category: {
                 name: category.name,
-                id: category.id
+                id: category.id,
             },
             request: {
                 method: 'PUT',
