@@ -1,12 +1,13 @@
 import express from "express";
 import Product from "../models/product";
+import Category from '../models/category';
 const router = express.Router();
 router.get('/', (req, res, next) => {
     Product.find({}).
-        select('id name rawPrice price code color categoryId description stockCount expirationDate').
+        select('id name rawPrice price code color category description stockCount expirationDate').
         then((products) => {
             res.status(200).json({
-                length :products.length,
+                length: products.length,
                 products: products,
                 request: {
                     method: 'GET',
@@ -22,40 +23,56 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-    const product = new Product({
-        id: req.body.id,
-        name: req.body.name,
-        rawPrice: req.body.rawPrice,
-        price: req.body.price,
-        code: req.body.code,
-        color: req.body.color,
-        categoryId: req.body.categoryId,
-        description: req.body.description,
-        stockCount: req.body.stockCount,
-        expirationDate: req.body.expirationDate
-    });
-    product.save()
-        .then((product) => {
-            res.status(201)
-                .json({
-                    message: 'One Product is created',
-                    product: product,
-                    request: {
-                        method: 'POST',
-                        action: 'Create new Product'
-                    }
-                })
-        }).catch((err) => {
-            res.status(500).json({
-                error: err
-            })
+    Category.find({ id: req.body.category }).
+        then(
+            (category) => {
+                if (category.length !== 0) {
+                    const product = new Product({
+                        id: req.body.id,
+                        name: req.body.name,
+                        rawPrice: req.body.rawPrice,
+                        price: req.body.price,
+                        code: req.body.code,
+                        color: req.body.color,
+                        category: req.body.category,
+                        description: req.body.description,
+                        stockCount: req.body.stockCount,
+                        expirationDate: req.body.expirationDate
+                    });
+                    product.save()
+                        .then((product) => {
+                            res.status(201)
+                                .json({
+                                    message: 'One Product is created',
+                                    product: product,
+                                    request: {
+                                        method: 'POST',
+                                        action: 'Create new Product'
+                                    }
+                                })
+                        }).catch((err) => {
+                            res.status(500).json({
+                                error: err
+                            })
+                        })
+                } else {
+                    res.status(500).
+                        json({
+                            error: 'Category Id not found'
+                        })
+                }
+            }
+        ).catch((err) => {
+            res.status(500).
+                json({ error: err });
         })
+
 });
 
 router.get('/:id', (req, res, next) => {
     const productId = req.params.id;
     Product.find({ id: productId }).
-        select('id name rawPrice price code color categoryId description stockCount expirationDate').
+        select('id name rawPrice price code color category description stockCount expirationDate').
         then((product) => {
             res.status(200).
                 json({
@@ -114,7 +131,7 @@ router.put('/:id', (req, res, next) => {
     }).then((product) => {
         res.status(200).
             json({
-                product:product,
+                product: product,
                 request: {
                     method: 'PUT',
                     action: 'Update One Product'

@@ -27,7 +27,7 @@ var productSchema = mongoose_1.default.Schema({
         }
     },
     color: { type: String, required: false },
-    categoryId: { type: Number, required: true, ref: 'Category' },
+    category: { type: Number, required: true, ref: 'Category' },
     description: { type: String, required: false },
     stockCount: { type: Number, required: false },
     expirationDate: { type: Date, required: false }
