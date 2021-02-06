@@ -1,11 +1,31 @@
 import express from "express";
 import Product from "../models/product";
 import Category from '../models/category';
+import multer from "multer";
 const router = express.Router();
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './assets');
+    }, filename: function (req, file, cb) {
+        cb(null, Date.now() + file.originalname);
+    }
+});
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter
+})
 router.get('/', (req, res, next) => {
     Product.find({}).
-        select('id name rawPrice price code color category description stockCount expirationDate').
+        select('id name rawPrice price code taxMethod category description stockCount expirationDate productImage').
         then((products) => {
+            console.log(products)
             res.status(200).json({
                 length: products.length,
                 products: products,
@@ -22,22 +42,25 @@ router.get('/', (req, res, next) => {
         })
 });
 
-router.post('/', (req, res, next) => {
-    Category.find({ id: req.body.category }).
+router.post('/', upload.single('productImage'), (req, res, next) => {
+    console.log(req.body)
+    Category.find({ name: req.body.category }).
         then(
             (category) => {
                 if (category.length !== 0) {
                     const product = new Product({
                         id: req.body.id,
                         name: req.body.name,
-                        rawPrice: req.body.rawPrice,
-                        price: req.body.price,
+                        rawPrice: Number(req.body.rawPrice),
+                        price: Number(req.body.price),
                         code: req.body.code,
                         color: req.body.color,
                         category: req.body.category,
-                        description: req.body.description,
-                        stockCount: req.body.stockCount,
-                        expirationDate: req.body.expirationDate
+                        description: req.body.productDescription,
+                        stockCount: Number(req.body.stockCount),
+                        expirationDate: req.body.expirationDate,
+                        productImage: req.file.path,
+                        taxMethod: req.body.taxMethod
                     });
                     product.save()
                         .then((product) => {
@@ -51,6 +74,7 @@ router.post('/', (req, res, next) => {
                                     }
                                 })
                         }).catch((err) => {
+                            console.log(err)
                             res.status(500).json({
                                 error: err
                             })
@@ -72,7 +96,7 @@ router.post('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
     const productId = req.params.id;
     Product.find({ id: productId }).
-        select('id name rawPrice price code color category description stockCount expirationDate').
+        select('id name rawPrice price code color category description stockCount expirationDate productImage').
         then((product) => {
             res.status(200).
                 json({

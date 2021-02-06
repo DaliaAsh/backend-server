@@ -7,6 +7,8 @@ var express_1 = __importDefault(require("express"));
 var categories_1 = __importDefault(require("./api/routes/categories"));
 var products_1 = __importDefault(require("./api/routes/products"));
 var checkouts_1 = __importDefault(require("./api/routes/checkouts"));
+var users_1 = __importDefault(require("./api/routes/users"));
+var stores_1 = __importDefault(require("./api/routes/stores"));
 var morgan_1 = __importDefault(require("morgan"));
 var body_parser_1 = __importDefault(require("body-parser"));
 var mongoose_1 = __importDefault(require("mongoose"));
@@ -41,6 +43,8 @@ app.use(function (req, res, next) {
 app.use('/category', categories_1.default);
 app.use('/product', products_1.default);
 app.use('/checkout', checkouts_1.default);
+app.use("/user", users_1.default);
+app.use("/store", stores_1.default);
 app.use(function (req, res, next) {
     var error = new Error("Not Found");
     next(error);

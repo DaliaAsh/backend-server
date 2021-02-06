@@ -6,11 +6,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var product_1 = __importDefault(require("../models/product"));
 var category_1 = __importDefault(require("../models/category"));
+var multer_1 = __importDefault(require("multer"));
 var router = express_1.default.Router();
+var storage = multer_1.default.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './assets');
+    }, filename: function (req, file, cb) {
+        cb(null, Date.now() + file.originalname);
+    }
+});
+var fileFilter = function (req, file, cb) {
+    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+        cb(null, true);
+    }
+    else {
+        cb(null, false);
+    }
+};
+var upload = multer_1.default({
+    storage: storage,
+    fileFilter: fileFilter
+});
 router.get('/', function (req, res, next) {
     product_1.default.find({}).
-        select('id name rawPrice price code color category description stockCount expirationDate').
+        select('id name rawPrice price code taxMethod category description stockCount expirationDate productImage').
         then(function (products) {
+        console.log(products);
         res.status(200).json({
             length: products.length,
             products: products,
@@ -26,21 +47,24 @@ router.get('/', function (req, res, next) {
         });
     });
 });
-router.post('/', function (req, res, next) {
-    category_1.default.find({ id: req.body.category }).
+router.post('/', upload.single('productImage'), function (req, res, next) {
+    console.log(req.body);
+    category_1.default.find({ name: req.body.category }).
         then(function (category) {
         if (category.length !== 0) {
             var product = new product_1.default({
                 id: req.body.id,
                 name: req.body.name,
-                rawPrice: req.body.rawPrice,
-                price: req.body.price,
+                rawPrice: Number(req.body.rawPrice),
+                price: Number(req.body.price),
                 code: req.body.code,
                 color: req.body.color,
                 category: req.body.category,
-                description: req.body.description,
-                stockCount: req.body.stockCount,
-                expirationDate: req.body.expirationDate
+                description: req.body.productDescription,
+                stockCount: Number(req.body.stockCount),
+                expirationDate: req.body.expirationDate,
+                productImage: req.file.path,
+                taxMethod: req.body.taxMethod
             });
             product.save()
                 .then(function (product) {
@@ -54,6 +78,7 @@ router.post('/', function (req, res, next) {
                     }
                 });
             }).catch(function (err) {
+                console.log(err);
                 res.status(500).json({
                     error: err
                 });
@@ -73,7 +98,7 @@ router.post('/', function (req, res, next) {
 router.get('/:id', function (req, res, next) {
     var productId = req.params.id;
     product_1.default.find({ id: productId }).
-        select('id name rawPrice price code color category description stockCount expirationDate').
+        select('id name rawPrice price code color category description stockCount expirationDate productImage').
         then(function (product) {
         res.status(200).
             json({
