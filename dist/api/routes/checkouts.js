@@ -6,31 +6,51 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var checkout_1 = __importDefault(require("../models/checkout"));
 var router = express_1.default.Router();
-router.post('/', function (req, res, next) {
+router.post("/", function (req, res) {
+    console.log(req.body);
     var checkout = new checkout_1.default({
-        id: req.body.id,
-        date: req.body.date,
-        products: req.body.products,
+        checkoutId: req.body.checkoutId,
+        clientName: req.body.clientName,
+        barCodeScanner: req.body.barCodeScanner,
+        productsOrders: req.body.productsOrders,
         total: req.body.total,
-        discount: req.body.discount,
-        paymentAmount: req.body.paymentAmount,
-        paymentMethod: req.body.paymentMethod
+        itemsNumber: req.body.itemsNumber
     });
-    checkout.save().
-        then(function (checkout) {
-        res.status(200).
-            json({
-            checkout: checkout,
-            request: {
-                method: 'POST',
-                action: 'create checkout'
-            }
+    checkout.save().then(function (checkout) {
+        if (checkout) {
+            res.status(201).json({
+                msg: "checkout added",
+                checkout: checkout,
+                method: "POST"
+            });
+        }
+    }).catch(function (err) {
+        res.status(500).json({
+            err: err,
+            msg: "error in adding checkout"
         });
-    }).
-        catch(function (err) {
-        console.log(err);
-        res.status(500).
-            json({
+    });
+});
+router.get("/", function (req, res) {
+    checkout_1.default.find({}).select('checkoutId clientName total barCodeScanner productsOrders total itemsNumber').then(function (checkouts) {
+        res.status(200).json({
+            method: "Fetch All Checkouts",
+            checkouts: checkouts
+        });
+    }).catch(function (err) {
+        res.status(500).json({
+            err: err,
+            msg: "an error occur while fetching all checkouts"
+        });
+    });
+});
+router.delete("/", function (req, res) {
+    checkout_1.default.remove({}).then(function () {
+        res.status(200).json({
+            msg: "DELETE ALL CHECKOUTS"
+        });
+    }).catch(function (err) {
+        res.status(500).json({
             error: err
         });
     });

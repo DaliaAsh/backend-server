@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 const checkoutSchema = mongoose.Schema({
-    id: Number,
-    date: Date,
-    products: {
-            productId: { type: Number, ref: 'Product' },
-            unitPrice:{type:Number},
-            quantity: {type:Number,default:1},
-            subtotal: {type:Number}
+    checkoutId: { type: Number, required: true, unique: true },
+    clientName: { type: String },
+    barCodeScanner: { type: String },
+    productsOrders: [
+        {
+            productName: { type: String, required: true },
+            price: { type: Number, required: true },
+            quantity: { type: Number, required: true },
+            id: { type: String, required: true, unique: true },
         }
-    ,
-    total: Number,
-    discount: Number,
-    paymentAmount: Number,
-    paymentMethod: String
+    ],
+    total: { type: Number, required: true },
+    itemsNumber: { type: Number, required: true },
 });
 export default mongoose.model('Checkout', checkoutSchema);

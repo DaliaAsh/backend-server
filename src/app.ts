@@ -4,6 +4,7 @@ import productsRoutes from "./api/routes/products";
 import checkoutsRoutes from "./api/routes/checkouts";
 import usersRoutes from "./api/routes/users";
 import storesRoutes from "./api/routes/stores";
+import adminRoutes from "./api/routes/admin";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
@@ -44,6 +45,7 @@ app.use('/product', productsRoutes);
 app.use('/checkout', checkoutsRoutes);
 app.use("/user", usersRoutes)
 app.use("/store", storesRoutes)
+app.use("/admin", adminRoutes)
 app.use((req, res, next) => {
     const error = new Error("Not Found");
     next(error);
